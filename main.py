@@ -7,6 +7,7 @@ from modules.utils.get_version import __version__
 from functools import partial
 
 set_signal_handler()
+resize()
 
 # [daisseur] Suggestion: https://github.com/Lucksi/Mr.Holmes
 
