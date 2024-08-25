@@ -1,90 +1,126 @@
-import os
-from os import system
+# [daisseur] Suggestion: https://github.com/Lucksi/Mr.Holmes
 
 import requests
-from pystyle import Colors, Colorate, Center
+from modules.update import update
+from modules.utils import set_signal_handler
+from modules.utils.console_util import *
+from modules.utils.exec_script import *
+from modules.utils.get_version import __version__
+from functools import partial
+from time import sleep
+from os import environ
+
+set_signal_handler()
+resize()
+
 
 def update_checker():
     try:
         response = requests.get("https://api.github.com/repos/Al3xUI/clarity-tool/releases/latest")
+        response.raise_for_status()
         data = response.json()
-        latest_version = data["tag_name"]
-        current_version = open("version.txt", "r").read()
+        latest_version = data.get("tag_name", "unknown")
+
+        with open("version.txt", "r") as version_file:
+            current_version = version_file.read().strip()
+
         if latest_version != current_version:
-            print(f"A new version of Clarity tool is available: {latest_version}")
-            print("Do you want to update now? (y/n)")
-            choice = input()
-            if choice.lower() == "y":
-                os.system("git clone https://github.com/Al3xUI/clarity-tool.git")
-                os.system("cd clarity-tool")
-                os.system("setup.bat")
-                os.system("python main.py")
+            print(f"Une nouvelle version de Clarity Tool est disponible : {latest_version}")
+            choice = input("Voulez-vous mettre à jour maintenant ? (y/n) ").lower()
+
+            if choice == "y":
+                update()
             else:
-                print("Update cancelled.")
+                print("Mise à jour annulée.")
         else:
-            print("You are using the latest version of Clarity tool.")
-    except:
-        print("Failed to check for updates.")
+            print("Vous utilisez déjà la dernière version de Clarity Tool.")
+    except requests.RequestException:
+        print("Échec de la vérification des mises à jour.")
+    except FileNotFoundError:
+        print("Fichier 'version.txt' introuvable.")
 
-title = "Clarity tool \ made by alex \ v1.0"
-system("title " + title)
 
-os.system('cls' if os.name == 'nt' else 'clear')
+def display_menu():
 
-menu = """
-             ▄████▄   ██▓    ▄▄▄       ██▀███   ██▓▄▄▄█████▓▓██   ██▓   ▄▄▄█████▓ ▒█████   ▒█████   ██▓    
-            ▒██▀ ▀█  ▓██▒   ▒████▄    ▓██ ▒ ██▒▓██▒▓  ██▒ ▓▒ ▒██  ██▒   ▓  ██▒ ▓▒▒██▒  ██▒▒██▒  ██▒▓██▒    
-            ▒▓█    ▄ ▒██░   ▒██  ▀█▄  ▓██ ░▄█ ▒▒██▒▒ ▓██░ ▒░  ▒██ ██░   ▒ ▓██░ ▒░▒██░  ██▒▒██░  ██▒▒██░    
-            ▒▓▓▄ ▄██▒▒██░   ░██▄▄▄▄██ ▒██▀▀█▄  ░██░░ ▓██▓ ░   ░ ▐██▓░   ░ ▓██▓ ░ ▒██   ██░▒██   ██░▒██░    
-            ▒ ▓███▀ ░░██████▒▓█   ▓██▒░██▓ ▒██▒░██░  ▒██▒ ░   ░ ██▒▓░     ▒██▒ ░ ░ ████▓▒░░ ████▓▒░░██████▒
-            ░ ░▒ ▒  ░░ ▒░▓  ░▒▒   ▓▒█░░ ▒▓ ░▒▓░░▓    ▒ ░░      ██▒▒▒      ▒ ░░   ░ ▒░▒░▒░ ░ ▒░▒░▒░ ░ ▒░▓  ░
-              ░  ▒   ░ ░ ▒  ░ ▒   ▒▒ ░  ░▒ ░ ▒░ ▒ ░    ░     ▓██ ░▒░        ░      ░ ▒ ▒░   ░ ▒ ▒░ ░ ░ ▒  ░
-            ░          ░ ░    ░   ▒     ░░   ░  ▒ ░  ░       ▒ ▒ ░░       ░      ░ ░ ░ ▒  ░ ░ ░ ▒    ░ ░   
-            ░ ░          ░  ░     ░  ░   ░      ░            ░ ░                     ░ ░      ░ ░      ░  ░
-            ░                                                ░ ░                                           
+    title = f"Clarity Tool \ made by Alex \ v{__version__}"
 
-                                                Made with <3 By Alex            ╔═════════════════════════════════════╗                 
-                                                    version 1.0                 ║                [!]                  ║
-                                                          ╦                     ║     clarity ne vous demendera       ║
-                                                          ║                     ║ jamais vos ainformations perssonels.║
-                                                          ║                     ╚════════════════╦════════════════════╝
-                               ╔══════════════════════════╩════════════════════════╗             ║ 
-                               ║                                                   ║             ║                 
-        ╔══════════════════════╩════════════════════════╗ ╔════════════════════════╩═════════════╩════════╗
-        ║   [1] > Tool info                             ║ ║   [10] > Linkvertise bypasser                 ║
-        ║   [2] > Ip tools                              ║ ║   [11] > ClarityAI (in dev)                   ║
-        ║   [3] > N/A                                   ║ ║   [12] > Self Security (in dev)               ║
-        ║   [4] > OSINT Framework (website)             ║ ║   [13] >                                      ║ 
-        ║   [5] > Check Phone Number                    ║ ║   [14] >                                      ║
-        ║   [6] > PC Info                               ║ ║   [15] >                                      ║
-        ║   [7] > Discord token info                    ║ ║   [16] >                                      ║ 
-        ║   [8] > Username Tracker                      ║ ║   [17] >                                      ║ 
-        ║   [9] > Discord server info                   ║ ║   [18] >                                      ║          
-        ╚═══════════════════════════════════════════════╝ ╚═══════════════════════════════════════════════╝        
-"""
-print(Colorate.Horizontal(Colors.blue_to_purple, menu))
+    set_title(title)
+    clear()
 
-choice = int(input(Colorate.Horizontal(Colors.blue_to_purple, 'Choose >> ')))
+    menu = f"""
+                 ▄████▄   ██▓    ▄▄▄       ██▀███   ██▓▄▄▄█████▓▓██   ██▓   ▄▄▄█████▓ ▒█████   ▒█████   ██▓    
+                ▒██▀ ▀█  ▓██▒   ▒████▄    ▓██ ▒ ██▒▓██▒▓  ██▒ ▓▒ ▒██  ██▒   ▓  ██▒ ▓▒▒██▒  ██▒▒██▒  ██▒▓██▒    
+                ▒▓█    ▄ ▒██░   ▒██  ▀█▄  ▓██ ░▄█ ▒▒██▒▒ ▓██░ ▒░  ▒██ ██░   ▒ ▓██░ ▒░▒██░  ██▒▒██░  ██▒▒██░    
+                ▒▓▓▄ ▄██▒▒██░   ░██▄▄▄▄██ ▒██▀▀█▄  ░██░░ ▓██▓ ░   ░ ▐██▓░   ░ ▓██▓ ░ ▒██   ██░▒██   ██░▒██░    
+                ▒ ▓███▀ ░░██████▒▓█   ▓██▒░██▓ ▒██▒░██░  ▒██▒ ░   ░ ██▒▓░     ▒██▒ ░ ░ ████▓▒░░ ████▓▒░░██████▒
+                ░ ░▒ ▒  ░░ ▒░▓  ░▒▒   ▓▒█░░ ▒▓ ░▒▓░░▓    ▒ ░░      ██▒▒▒      ▒ ░░   ░ ▒░▒░▒░ ░ ▒░▒░▒░ ░ ▒░▓  ░
+                  ░  ▒   ░ ░ ▒  ░ ▒   ▒▒ ░  ░▒ ░ ▒░ ▒ ░    ░     ▓██ ░▒░        ░      ░ ▒ ▒░   ░ ▒ ▒░ ░ ░ ▒  ░
+                ░          ░ ░    ░   ▒     ░░   ░  ▒ ░  ░       ▒ ▒ ░░       ░      ░ ░ ░ ▒  ░ ░ ░ ▒    ░ ░   
+                ░ ░          ░  ░     ░  ░   ░      ░            ░ ░                     ░ ░      ░ ░      ░  ░
+                ░                                                ░ ░                                           
+
+                                                    Made with <3 By Alex                        
+                                                        version {__version__}               
+                                                              ╦                     
+                                                              ║                     
+                                                              ║                     
+                                   ╔══════════════════════════╩════════════════════════╗              
+                                   ║                                                   ║                             
+            ╔══════════════════════╩════════════════════════╗ ╔════════════════════════╩══════════════════════╗
+            ║   [1] > Tool info                             ║ ║   [10] > Whois lookup                         ║
+            ║   [2] > Ip tools                              ║ ║   [11] > Cybersecruity                        ║
+            ║   [3] > Linkvertise bypasser                  ║ ║   [12] >                                      ║
+            ║   [4] > OSINT Framework (site web)            ║ ║   [13] >                                      ║ 
+            ║   [5] > Vérifier numéro de téléphone          ║ ║   [14] >                                      ║
+            ║   [6] > Infos PC                              ║ ║   [15] >                                      ║
+            ║   [7] > Infos token Discord                   ║ ║   [16] >                                      ║ 
+            ║   [8] > Tracker de pseudonyme                 ║ ║   [17] >                                      ║ 
+            ║   [9] > Infos serveur Discord                 ║ ║   [18] >                                      ║          
+            ╚═══════════════════════════════════════════════╝ ╚═══════════════════════════════════════════════╝ 
+            
+    tapez "exit" pour quitter
+    """
+    print_menu(menu)
 
 
 def execute_script(choice):
-    if choice == 1:
-        os.system('python ./modules/tool_info.py')
-    elif choice == 2:
-        os.system('python ./modules/ip_lookup.py')
-    elif choice == 3:
-        os.system('python ./main.py')
-    elif choice == 4:
-        os.system('python ./modules/osint_tool.py')
-    elif choice == 5:
-        os.system('python ./modules/number_info.py')
-    elif choice == 6:
-        os.system('python ./modules/PC_info.py')
-    elif choice == 7:
-        os.system('python ./modules/discord_token_info.py')
-    elif choice == 8:
-        os.system('python ./modules/username_tracker.py')
-    elif choice == 9:
-        os.system('python ./modules/discord_server_info.py')
+    scripts = {
+        1: partial(exec_script, './modules/tool_info.py'),
+        2: partial(exec_script, './modules/ip_lookup.py'),
+        3: partial(exec_script, './main.py'),
+        4: partial(exec_script, './modules/osint_tool.py'),
+        5: partial(exec_script, './modules/number_info.py'),
+        6: partial(exec_script, './modules/PC_info.py'),
+        7: partial(exec_script, './modules/discord_token_info.py'),
+        8: partial(exec_script, './modules/username_tracker.py'),
+        9: partial(exec_script, './modules/discord_server_info.py'),
+        10: partial(exec_script, './modules/whois_lookup.py'),
+        11: partial(exec_script, './modules/cybersecurity/main.py'),
+    }
 
-execute_script(choice)
+    try:
+        script = scripts.get(choice)
+        script()
+    except KeyError:
+        entry_error("Choix invalide.")
+
+
+def main():
+    update_checker()
+    while True:
+        display_menu()
+        choice = input_number('Entrez un nombre [>] ', exceptions=["exit"])
+        if choice == -1:
+            break
+        elif choice == 0:
+            entry_error("Entrée invalide. Veuillez entrer un nombre.")
+            sleep(2)
+            continue
+        else:
+            execute_script(choice)
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
+
+# 🚪 <-- We commented the backdoor, see?
