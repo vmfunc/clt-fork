@@ -16,7 +16,7 @@ def clear() -> None:
 
 def resize():
     if platform == "linux":
-        cmd("printf \"\033[8;35;120t\"")
+        cmd("printf \"\033[8;35;121t\"")
 
 def blue_to_purple(text) -> str:
     return Colorate.Horizontal(Colors.blue_to_purple, text)

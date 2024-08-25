@@ -1,3 +1,5 @@
+# [daisseur] Suggestion: https://github.com/Lucksi/Mr.Holmes
+
 import requests
 from modules.update import update
 from modules.utils import set_signal_handler
@@ -5,11 +7,12 @@ from modules.utils.console_util import *
 from modules.utils.exec_script import *
 from modules.utils.get_version import __version__
 from functools import partial
+from time import sleep
+from os import environ
 
 set_signal_handler()
 resize()
 
-# [daisseur] Suggestion: https://github.com/Lucksi/Mr.Holmes
 
 def update_checker():
     try:
@@ -98,7 +101,6 @@ def execute_script(choice):
     try:
         script = scripts.get(choice)
         script()
-        sys.exit()
     except KeyError:
         entry_error("Choix invalide.")
 

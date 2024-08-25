@@ -1,6 +1,5 @@
 from subprocess import call
 import sys
-from time import sleep
 
 
 def exec_script(path):
